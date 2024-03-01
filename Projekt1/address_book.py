@@ -427,11 +427,12 @@ def main():
             while True:
                 note_action = input(
                     "Wybierz działanie dla notatek: \nDodaj notatkę (d), Pokaż notatki (p), "
-                    "Usuń notatkę (u), Wróć (q): ")
+                    "Usuń notatkę (u), Edytuj notatkę (e), Wyszukaj notatki według tagu (t), Sortuj notatki według tagów (s), Wróć (q): ")
                 if note_action == 'd':
                     title = input("Podaj tytuł notatki: ")
                     content = input("Podaj treść notatki: ")
-                    notebook.add_note(title, content)
+                    tags = input("Podaj tagi oddzielone przecinkami (naciśnij Enter, aby pominąć): ").split(',')
+                    notebook.add_note(title, content, tags)
                     print("Dodano notatkę.")
                 elif note_action == 'p':
                     notebook.show_notes()
@@ -439,10 +440,30 @@ def main():
                     note_id = input("Podaj ID notatki do usunięcia: ")
                     notebook.delete_note(note_id)
                     print("Usunięto notatkę.")
+                elif note_action == 'e':
+                    note_id = input("Podaj ID notatki do edycji: ")
+                    title = input("Podaj nowy tytuł notatki (naciśnij Enter, aby pominąć): ")
+                    content = input("Podaj nową treść notatki (naciśnij Enter, aby pominąć): ")
+                    tags = input("Podaj nowe tagi oddzielone przecinkami (naciśnij Enter, aby pominąć): ").split(',')
+                    notebook.edit_note(note_id, title, content, tags)
+                    print("Zaktualizowano notatkę.")
+                elif note_action == 't':
+                    tag = input("Podaj tag do wyszukiwania: ")
+                    notebook.search_notes_by_tag(tag)
+                elif note_action == 's':
+                    while True:
+                        tag = input("Podaj tag po którym chcesz sortować notatki: ")
+                        if notebook.sort_notes_by_tags(tag):
+                            notebook.show_notes()
+                            print("Wyświetlono posortowane notatki.")
+                            break
+                        else:
+                            print("Nie ma takiego tagu, spróbuj ponownie.")
                 elif note_action == 'q':
                     break
                 else:
                     print("Nieznana akcja, spróbuj ponownie.")
+
         elif action == 'q':
             print("Wyjście z programu.")
             break
@@ -454,4 +475,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
