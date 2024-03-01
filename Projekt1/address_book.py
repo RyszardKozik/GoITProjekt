@@ -3,10 +3,12 @@ import re
 import pickle
 from datetime import datetime, timedelta
 
+
 class Field:
     """Base class for entry fields."""
     def __init__(self, value):
         self.value = value
+
 
 class Name(Field):
     pass
@@ -47,6 +49,13 @@ class Birthday(Field):
         except ValueError:
             return False
 
+class Address(Field):
+    def __init__(self, street, city, postal_code):
+        self.street = street
+        self.city = city
+        self.postal_code = postal_code
+        super().__init__(value=f"{street}, {city}, {postal_code}")
+
 class Record:
     def __init__(self, name: Name, birthday: Birthday = None):
         self.id = None  # The ID will be assigned by AddressBook
@@ -54,6 +63,11 @@ class Record:
         self.phones = []
         self.emails = []
         self.birthday = birthday
+        self.address = None  # Add a new property to store the address
+
+    def add_address(self, address: Address):
+        """Adds an address."""
+        self.address = address
 
     def add_phone(self, phone: Phone):
         """Adds a phone number."""
@@ -102,8 +116,10 @@ class Record:
         emails = ', '.join(email.value for email in self.emails)
         birthday_str = f", Urodziny: {self.birthday.value}" if self.birthday else ""
         days_to_bday_str = f", Dni do urodzin: {self.days_to_birthday()}" if self.birthday else ""
+        address_str = f"\nAdres: {self.address.value}" if self.address else ""
         return f"ID: {self.id}, Imię i nazwisko: {self.name.value}, " \
-               f"Telefony: {phones}, Email: {emails}{birthday_str}{days_to_bday_str}"
+               f"Telefony: {phones}, Email: {emails}{birthday_str}{days_to_bday_str}{address_str}"
+
 
 class AddressBook(UserDict):
     def __init__(self):
@@ -359,6 +375,15 @@ def create_record():
             record.add_email(email)
         except ValueError as e:
             print(e)
+
+    # New functionality: Adding an address
+    add_address = input("Czy chcesz dodać adres? (t/n): ").lower().strip()
+    if add_address == 't':
+        street = input("Podaj ulicę: ")
+        city = input("Podaj miasto: ")
+        postal_code = input("Podaj kod pocztowy: ")
+        address = Address(street, city, postal_code)
+        record.add_address(address)
 
     return record
 
