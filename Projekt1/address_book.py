@@ -2,6 +2,7 @@ from collections import UserDict
 import re
 import pickle
 from datetime import datetime, timedelta
+from notes import Notebook
 
 
 class Field:
@@ -379,7 +380,7 @@ def create_record():
 
     # New functionality: Adding an address
     add_address = input("Czy chcesz dodać adres? (t/n): ").lower().strip()
-    if add_address == 't':
+    if add_address in ['t']:
         street = input("Podaj ulicę: ")
         city = input("Podaj miasto: ")
         postal_code = input("Podaj kod pocztowy: ")
@@ -390,37 +391,67 @@ def create_record():
     return record
 
 def main():
-    """The main app function"""
+    notebook = Notebook()
+    notebook.load_notes()
     book = load_address_book()
+
     while True:
-        action = input("Wybierz akcję: dodaj (d), znajdź (z), usuń (u), edytuj (e), pokaż wszystkie (p), koniec (q): ")
-        if action in ['dodaj', 'add', 'd']:
-            record = create_record()
-            book.add_record(record)
-        elif action in ['znajdź', 'znajdz', 'z']:
-            search = input("Wpisz szukaną frazę: ")
-            found = book.find_record(search)
-            for record in found:
-                print(record)
-        elif action in ['usuń', 'usun', 'u']:
-            book.delete_record()
-        elif action in ['edytuj', 'edycja', 'e']:
-            edit_record(book)
-        elif action in ['pokaż wszystkie', 'pokaż', 'pokaz', 'p']:
-            iterator = iter(book)
+        action = input("Wybierz akcję: \nZarządzaj Kontaktami (z), Zarządzaj notatkami (n), albo Wyjdź (q): ")
+        if action == 'z':
             while True:
-                try:
-                    records = next(iterator)
-                    for record in records:
+                contact_action = input(
+                    "Wybierz działanie: \nDodaj kontakt (d), Znajdź kontakt (z), "
+                    "Usuń kontakt (u), Edytuj kontakt (e), Pokaż wszystkie (p), Wróć (q): ")
+                if contact_action == 'd':
+                    record = create_record()
+                    book.add_record(record)
+                    print("Dodano kontakt.")
+                elif contact_action == 'z':
+                    search_term = input("Wpisz szukaną frazę: ")
+                    found = book.find_record(search_term)
+                    for record in found:
                         print(record)
-                    if input("Naciśnij Enter, aby kontynuować lub wpisz 'q' aby zakończyć: ") == 'q':
-                        break
-                except StopIteration:
-                    print("Koniec listy.")
+                elif contact_action == 'u':
+                    book.delete_record_by_id()
+                    print("Usunięto kontakt.")
+                elif contact_action == 'e':
+                    edit_record(book)
+                    print("Zaktualizowano kontakt.")
+                elif contact_action == 'p':
+                    book.show_all_records()
+                elif contact_action == 'q':
                     break
-        elif action in ["koniec", "q"]:
-            save_address_book(book)
+                else:
+                    print("Nieznana akcja, spróbuj ponownie.")
+        elif action == 'n':
+            while True:
+                note_action = input(
+                    "Wybierz działanie dla notatek: \nDodaj notatkę (d), Pokaż notatki (p), "
+                    "Usuń notatkę (u), Wróć (q): ")
+                if note_action == 'd':
+                    title = input("Podaj tytuł notatki: ")
+                    content = input("Podaj treść notatki: ")
+                    notebook.add_note(title, content)
+                    print("Dodano notatkę.")
+                elif note_action == 'p':
+                    notebook.show_notes()
+                elif note_action == 'u':
+                    note_id = input("Podaj ID notatki do usunięcia: ")
+                    notebook.delete_note(note_id)
+                    print("Usunięto notatkę.")
+                elif note_action == 'q':
+                    break
+                else:
+                    print("Nieznana akcja, spróbuj ponownie.")
+        elif action == 'q':
+            print("Wyjście z programu.")
             break
+        else:
+            print("Nieznana akcja, spróbuj ponownie.")
+
+    save_address_book(book)
+    notebook.save_notes()
 
 if __name__ == "__main__":
     main()
+
