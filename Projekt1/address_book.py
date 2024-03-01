@@ -50,11 +50,12 @@ class Birthday(Field):
             return False
 
 class Address(Field):
-    def __init__(self, street, city, postal_code):
+    def __init__(self, street, city, postal_code, country):
         self.street = street
         self.city = city
         self.postal_code = postal_code
-        super().__init__(value=f"{street}, {city}, {postal_code}")
+        self.country = country
+        super().__init__(value=f"{street}, {city}, {postal_code}, {country}")
 
 class Record:
     def __init__(self, name: Name, birthday: Birthday = None):
@@ -382,7 +383,8 @@ def create_record():
         street = input("Podaj ulicę: ")
         city = input("Podaj miasto: ")
         postal_code = input("Podaj kod pocztowy: ")
-        address = Address(street, city, postal_code)
+        country = input("Podaj nazwę państwa: ")
+        address = Address(street, city, postal_code, country)
         record.add_address(address)
 
     return record
