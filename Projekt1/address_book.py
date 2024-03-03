@@ -123,11 +123,14 @@ class Record:
         """Returns a string representation of the entry, including the ID."""
         phones = ', '.join(phone.value for phone in self.phones)
         emails = ', '.join(email.value for email in self.emails)
-        birthday_str = f", Urodziny: {self.birthday.value}" if self.birthday else ""
-        days_to_bday_str = f", Dni do urodzin: {self.days_to_birthday()}" if self.birthday else ""
+        birthday_str = f", Urodziny: {
+            self.birthday.value}" if self.birthday else ""
+        days_to_bday_str = f", Dni do urodzin: {
+            self.days_to_birthday()}" if self.birthday else ""
         address_str = f"\nAdres: {self.address.value}" if self.address else ""
         return f"ID: {self.id}, Imię i nazwisko: {self.name.value}, " \
-            f"Telefony: {phones}, Email: {emails}{birthday_str}{days_to_bday_str}{address_str}"
+            f"Telefony: {phones}, Email: {emails}{
+                birthday_str}{days_to_bday_str}{address_str}"
 
 
 class AddressBook(UserDict):
@@ -238,23 +241,30 @@ class AddressBook(UserDict):
         else:
             raise StopIteration
 
-    def edit_record(self, book, record: Record):
-        """Edits an existing record in the address book."""
+    def edit_record(self):
+        """Edits a record based on the selected name."""
         name_to_edit = input(
-            "Wprowadź imię i nazwisko które chcesz edytować: ")
-        content = book.find_records_by_name(name_to_edit)
-        for key, val in book.data.items():
-            if val == name_to_edit:
-                record = book.data[key]
-        if content:
-            print(f"Edytowanie: {name_to_edit}.")
+            "Podaj imię i nazwisko osoby, którą chcesz edytować: ")
+        matching_records = self.find_records_by_name(name_to_edit)
+
+        if not matching_records:
+            print("Nie znaleziono pasujących rekordów.")
+            return
+
+        print("Znaleziono następujące pasujące rekordy:")
+        for record_id, record in matching_records:
+            print(f"ID: {record_id}, Rekord: {record}")
+
+            record_id_to_edit = int(
+                input("Podaj ID rekordu, który chcesz edytować: "))
+            if record_id_to_edit in self.data:
+                record = self.data[record_id_to_edit]
+                print(f"Edytowanie: {record}.")
 
             # Name and surname edit
-            new_name_input = input(
-                "Podaj imię i nazwisko (wciśnij Enter żeby zachować obecne): ")
-            if new_name_input.strip():
-                record = book.data[key]
-                record.edit_name(Name(new_name_input))
+                new_name = input(
+                    'Podaj imię i nazwisko: ')
+                record.edit_name(Name(new_name))
                 print("Zaktualizowano imię i nazwisko.")
 
             # Phone number edit
@@ -441,8 +451,7 @@ def main():
                     book.delete_record_by_id()
                     print("Usunięto kontakt.")
                 elif contact_action == 'e':
-                    record = Record
-                    book.edit_record(book, record)
+                    book.edit_record()
                     print("Zaktualizowano kontakt.")
                 elif contact_action == 'p':
                     book.show_all_records()
