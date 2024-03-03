@@ -432,6 +432,7 @@ def main():
                     title = input("Podaj tytuł notatki: ")
                     content = input("Podaj treść notatki: ")
                     tags = input("Podaj tagi oddzielone przecinkami (naciśnij Enter, aby pominąć): ").split(',')
+                    tags = [tag.strip() for tag in tags if tag.strip()]
                     notebook.add_note(title, content, tags)
                     print("Dodano notatkę.")
                 elif note_action == 'p':
@@ -447,18 +448,16 @@ def main():
                     tags = input("Podaj nowe tagi oddzielone przecinkami (naciśnij Enter, aby pominąć): ").split(',')
                     notebook.edit_note(note_id, title, content, tags)
                     print("Zaktualizowano notatkę.")
-                elif note_action == 't':
+                if note_action == 't':
+                    notebook.tag_manager.display_available_tags()  # Wyświetla dostępne tagi
+                    input("Naciśnij Enter, aby kontynuować...")
                     tag = input("Podaj tag do wyszukiwania: ")
-                    notebook.search_notes_by_tag(tag)
+                    notebook.tag_manager.search_notes_by_tag(tag)
                 elif note_action == 's':
-                    while True:
-                        tag = input("Podaj tag po którym chcesz sortować notatki: ")
-                        if notebook.sort_notes_by_tags(tag):
-                            notebook.show_notes()
-                            print("Wyświetlono posortowane notatki.")
-                            break
-                        else:
-                            print("Nie ma takiego tagu, spróbuj ponownie.")
+                    notebook.tag_manager.display_available_tags()  # Wyświetla dostępne tagi
+                    input("Naciśnij Enter, aby kontynuować...")
+                    tag = input("Podaj tag po którym chcesz sortować notatki: ")
+                    notebook.tag_manager.sort_notes_by_tags(tag)
                 elif note_action == 'q':
                     break
                 else:

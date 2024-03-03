@@ -1,5 +1,7 @@
 import pickle
+import pickle
 from datetime import datetime
+from tag_manager import TagManager
 
 class Note:
     def __init__(self, title, content, tags=None):
@@ -13,11 +15,17 @@ class Note:
 
 class Notebook:
     def __init__(self):
-        self.notes = [] # Lista do przechowywania notatek
+        self.notes = []
+        self.tag_manager = TagManager(self.notes)  # Adding TagManager
 
     def add_note(self, title, content, tags=None):
-        note = {"title": title, "content": content, "tags": tags if tags else []}
+        tags = tags or []  # Ustaw pustą listę, jeśli tags jest None
+        note = {"title": title, "content": content, "tags": tags}
         self.notes.append(note)
+        self.update_tags()
+
+    def update_tags(self):
+        self.tag_manager.set_notes(self.notes)
 
     def show_notes(self):
         if not self.notes:
