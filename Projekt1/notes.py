@@ -33,8 +33,8 @@ class Notebook:
         if not self.notes:
             print("Brak notatek do wyświetlenia.")
             return
-        for note in self.notes:
-            print(f"Tytuł: {note.get('title', 'Brak tytułu')}\nTreść: {
+        for idx, note in enumerate(self.notes, start=1):
+            print(f"ID: {idx} Tytuł: {note.get('title', 'Brak tytułu')}\nTreść: {
                   note.get('content', 'Brak treści')}\nTagi: {', '.join(note.get('tags', []))}")
 
     def delete_note(self, note_id):
@@ -57,8 +57,8 @@ class Notebook:
         # Konwertuj note_id na int, aby uniknąć błędu porównania typów
         note_id = int(note_id)
 
-        if 0 <= note_id < len(self.notes):
-            note = self.notes[note_id]
+        if 0 < note_id <= len(self.notes):
+            note = self.notes[note_id - 1]
             if title is not None:
                 note['title'] = title
             if content is not None:
