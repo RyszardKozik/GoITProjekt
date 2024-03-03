@@ -476,7 +476,7 @@ def main():
                     print("Usunięto notatkę.")
 
                 elif note_action == 'e':
-                    note_id = input("Podaj ID notatki do edycji: ")
+                    note_id = int(input("Podaj ID notatki do edycji: "))
                     title = input(
                         "Podaj nowy tytuł notatki (naciśnij Enter, aby pominąć): ")
                     content = input(
