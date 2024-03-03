@@ -123,14 +123,11 @@ class Record:
         """Returns a string representation of the entry, including the ID."""
         phones = ', '.join(phone.value for phone in self.phones)
         emails = ', '.join(email.value for email in self.emails)
-        birthday_str = f", Urodziny: {
-            self.birthday.value}" if self.birthday else ""
-        days_to_bday_str = f", Dni do urodzin: {
-            self.days_to_birthday()}" if self.birthday else ""
+        birthday_str = f", Urodziny: {self.birthday.value}" if self.birthday else ""
+        days_to_bday_str = f", Dni do urodzin: {self.days_to_birthday()}" if self.birthday else ""
         address_str = f"\nAdres: {self.address.value}" if self.address else ""
         return f"ID: {self.id}, Imię i nazwisko: {self.name.value}, " \
-            f"Telefony: {phones}, Email: {emails}{
-                birthday_str}{days_to_bday_str}{address_str}"
+            f"Telefony: {phones}, Email: {emails}{birthday_str}{days_to_bday_str}{address_str}"
 
 
 class AddressBook(UserDict):

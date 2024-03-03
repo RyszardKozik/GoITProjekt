@@ -34,8 +34,7 @@ class Notebook:
             print("Brak notatek do wyświetlenia.")
             return
         for note in self.notes:
-            print(f"Tytuł: {note.get('title', 'Brak tytułu')}\nTreść: {
-                  note.get('content', 'Brak treści')}\nTagi: {', '.join(note.get('tags', []))}")
+            print(f"Tytuł: {note.get('title', 'Brak tytułu')}\nTreść: {note.get('content', 'Brak treści')}\nTagi: {', '.join(note.get('tags', []))}")
 
     def delete_note(self, note_id):
         try:
@@ -43,8 +42,7 @@ class Notebook:
             if 0 < note_id <= len(self.notes):
                 # Usuwa notatkę i zwraca ją
                 deleted_note = self.notes.pop(note_id-1)
-                print(f"Usunięto notatkę: {
-                      deleted_note.get('title', 'Brak tytułu')}")
+                print(f"Usunięto notatkę: {deleted_note.get('title', 'Brak tytułu')}")
             else:
                 print("Notatka o podanym ID nie istnieje.")
         except ValueError:
@@ -85,8 +83,7 @@ class Notebook:
             print()
             print("Oto twoja notatka:")
             print()
-            print(f"Tytuł: {note['title']}\nTreść: {
-                  note['content']}\nTagi: {', '.join(note['tags'])}")
+            print(f"Tytuł: {note['title']}\nTreść: {note['content']}\nTagi: {', '.join(note['tags'])}")
 
     def save_notes(self, filename='notes.pkl'):
         try:
