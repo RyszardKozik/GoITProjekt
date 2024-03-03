@@ -3,6 +3,7 @@ import re
 import pickle
 from datetime import datetime, timedelta
 from notes import Notebook
+from Levenshtein import distance as levenshtein_distance
 
 
 class Field:
@@ -261,6 +262,34 @@ class AddressBook(UserDict):
                 record = self.data[record_id_to_edit]
                 print(f"Edytowanie: {record}.")
 
+    # def suggest_correction_name(name_to_edit, content):
+    #     closest_name = min(content, key=lambda x: levenshtein_distance(name_to_edit, x[0].name.value))
+    #     return closest_name[0].name.value
+
+    def edit_record(self):
+        """Edits a record based on the selected name."""
+        name_to_edit = input(
+            "Podaj imię i nazwisko osoby, którą chcesz edytować: ")
+        matching_records = self.find_records_by_name(name_to_edit)
+
+        if not matching_records:
+            print("Nie znaleziono pasujących rekordów.")
+            return
+
+        print("Znaleziono następujące pasujące rekordy:")
+        for record_id, record in matching_records:
+            print(f"ID: {record_id}, Rekord: {record}")
+
+            record_id_to_edit = int(
+                input("Podaj ID rekordu, który chcesz edytować: "))
+            if record_id_to_edit in self.data:
+                record = self.data[record_id_to_edit]
+                print(f"Edytowanie: {record}.")
+            # else:
+                # print("Nie znaleziono pasujących rekordów.")
+                # closest_search_term = suggest_correction_name(name_to_edit, book)
+                # print(f"Czy chodziło Ci o: {closest_search_term}   - dla  wyszukiwania?")
+
             # Name and surname edit
                 new_name = input(
                     'Podaj imię i nazwisko: ')
@@ -425,11 +454,79 @@ def create_record():
     return record
 
 
+def suggest_closest_command(contact_action, available_commands):
+    closest_command = min(available_commands, key=lambda x: abs(
+        ord(x) - ord(contact_action)))
+    return closest_command
+
+
+def suggest_correction_search(search_term, book):
+    # Levenshtein distance dla search_term
+    all_search_terms = [record.name.value for record in book.data.values()] + [phone.value for record in
+                                                                               book.data.values() for phone in
+                                                                               record.phones] + [email.value for record
+                                                                                                 in book.data.values()
+                                                                                                 for email in
+                                                                                                 record.emails]
+
+    closest_search_term = min(
+        all_search_terms, key=lambda x: weighted_levenshtein_distance(search_term, x))
+    return closest_search_term
+
+
+def weighted_levenshtein_distance(s1, s2):
+    len_s1 = len(s1)
+    len_s2 = len(s2)
+
+    if len_s1 == 0:
+        return len_s2
+    if len_s2 == 0:
+        return len_s1
+
+    matrix = [[0] * (len_s2 + 1) for _ in range(len_s1 + 1)]
+
+    for i in range(len_s1 + 1):
+        matrix[i][0] = i
+
+    for j in range(len_s2 + 1):
+        matrix[0][j] = j
+
+    for i in range(1, len_s1 + 1):
+        for j in range(1, len_s2 + 1):
+            cost = 0 if s1[i - 1] == s2[j - 1] else 1
+            matrix[i][j] = min(matrix[i - 1][j] + 1, matrix[i]
+                               [j - 1] + 1, matrix[i - 1][j - 1] + cost)
+
+    # Weighted Levenshtein distance
+    return matrix[len_s1][len_s2] / max(len_s1, len_s2)
+
+
+def levenshtein_distance(s1, s2):
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+
+    if len(s2) == 0:
+        return len(s1)
+
+    previous_row = range(len(s2) + 1)
+
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+
+    return previous_row[-1]
+
+
 def main():
     notebook = Notebook()
     notebook.load_notes()
     book = load_address_book()
-
+    available_commands = ['d', 'z', 'u', 'e', 'p', 'z']
     while True:
         action = input(
             "Wybierz akcję: \nZarządzaj Kontaktami (z), Zarządzaj notatkami (n), albo Wyjdź (q): ")
@@ -447,6 +544,12 @@ def main():
                     found = book.find_record(search_term)
                     for record in found:
                         print(record)
+                        continue
+                    if search_term not in found:
+                        closest_search_term = suggest_correction_search(
+                            search_term, book)
+                        print(f"Czy chodziło Ci o: {
+                              closest_search_term}   - dla frazy wyszukiwania?")
                 elif contact_action == 'u':
                     book.delete_record_by_id()
                     print("Usunięto kontakt.")
@@ -458,7 +561,13 @@ def main():
                 elif contact_action == 'q':
                     break
                 else:
-                    print("Nieznana akcja, spróbuj ponownie.")
+                    closest_command = suggest_closest_command(
+                        contact_action, available_commands)
+                    # closest_search_term = suggest_correction_search(search, book)
+                    print(f"Czy chodziło Ci o wybranie: {
+                          closest_command}   - dla komendy ")
+                    # print("Nieznana akcja, spróbuj ponownie.")
+                    # print("Nieznana akcja, spróbuj ponownie.")
         elif action == 'n':
             while True:
                 note_action = input(
