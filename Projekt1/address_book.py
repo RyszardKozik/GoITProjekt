@@ -435,12 +435,15 @@ def main():
                     tags = [tag.strip() for tag in tags if tag.strip()]
                     notebook.add_note(title, content, tags)
                     print("Dodano notatkę.")
+                    break
                 elif note_action == 'p':
                     notebook.show_notes()
+                    break
                 elif note_action == 'u':
                     note_id = input("Podaj ID notatki do usunięcia: ")
                     notebook.delete_note(note_id)
                     print("Usunięto notatkę.")
+                    break
                 elif note_action == 'e':
                     note_id = input("Podaj ID notatki do edycji: ")
                     title = input("Podaj nowy tytuł notatki (naciśnij Enter, aby pominąć): ")
@@ -448,21 +451,23 @@ def main():
                     tags = input("Podaj nowe tagi oddzielone przecinkami (naciśnij Enter, aby pominąć): ").split(',')
                     notebook.edit_note(note_id, title, content, tags)
                     print("Zaktualizowano notatkę.")
-                if note_action == 't':
-                    notebook.tag_manager.display_available_tags()  # Wyświetla dostępne tagi
+                    break
+                elif note_action == 't':
+                    notebook.tag_manager.display_available_tags() # Wyświetla dostępne tagi
                     input("Naciśnij Enter, aby kontynuować...")
                     tag = input("Podaj tag do wyszukiwania: ")
                     notebook.tag_manager.search_notes_by_tag(tag)
+                    break
                 elif note_action == 's':
-                    notebook.tag_manager.display_available_tags()  # Wyświetla dostępne tagi
+                    notebook.tag_manager.display_available_tags() # Wyświetla dostępne tagi
                     input("Naciśnij Enter, aby kontynuować...")
                     tag = input("Podaj tag po którym chcesz sortować notatki: ")
                     notebook.tag_manager.sort_notes_by_tags(tag)
+                    break
                 elif note_action == 'q':
                     break
                 else:
                     print("Nieznana akcja, spróbuj ponownie.")
-
         elif action == 'q':
             print("Wyjście z programu.")
             break
