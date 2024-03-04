@@ -124,14 +124,12 @@ class Record:
         """Returns a string representation of the entry, including the ID."""
         phones = ', '.join(phone.value for phone in self.phones)
         emails = ', '.join(email.value for email in self.emails)
-        birthday_str = f", Urodziny: {
-            self.birthday.value}" if self.birthday else ""
-        days_to_bday_str = f", Dni do urodzin: {
-            self.days_to_birthday()}" if self.birthday else ""
+        birthday_str = f", Urodziny: {self.birthday.value}" if self.birthday else ""
+        days_to_bday_str = f", Dni do urodzin: {self.days_to_birthday()}" if self.birthday else ""
         address_str = f"\nAdres: {self.address.value}" if self.address else ""
-        return f"ID: {self.id}, Imię i nazwisko: {self.name.value}, " \
-            f"Telefony: {phones}, Email: {emails}{
-                birthday_str}{days_to_bday_str}{address_str}"
+        return (f"ID: {self.id}, Imię i nazwisko: {self.name.value}, "
+                f"Telefony: {phones}, Email: {emails}"
+                f"{birthday_str}{days_to_bday_str}{address_str}")
 
 
 class AddressBook(UserDict):
@@ -141,17 +139,16 @@ class AddressBook(UserDict):
         self.free_ids = set()
 
     def add_record(self, record: Record):
-        """Adds an entry to the address book with ID management."""
-        while self.next_id in self.data or self.next_id in self.free_ids:
-            self.next_id += 1
-        if self.free_ids:
-            record.id = min(self.free_ids)
-            self.free_ids.remove(record.id)
-        else:
-            record.id = self.next_id
-            self.next_id += 1
+        """Dodaje wpis do książki adresowej z zarządzaniem ID."""
+        record.id = self._get_next_record_id()
         self.data[record.id] = record
         print(f"Dodano wpis z ID: {record.id}.")
+
+    def _get_next_record_id(self):
+        """Pomocnicza metoda do uzyskania kolejnego ID."""
+        while self.next_id in self.data or self.next_id in self.free_ids:
+            self.next_id += 1
+        return self.free_ids.pop() if self.free_ids else self.next_id
 
     def delete_record_by_id(self):
         """Deletes a record based on ID."""
@@ -361,16 +358,14 @@ def save_address_book(book, filename='address_book.pkl'):
 def load_address_book(filename='address_book.pkl'):
     try:
         with open(filename, 'rb') as file:
-            data = pickle.load(file)
-        book = AddressBook()
-        book.data = data
-        print("Przywrócono książkę adresową.")
+            book = pickle.load(file)
+        print("Książka adresowa została wczytana.")
         return book
     except FileNotFoundError:
-        print("Plik nie istnieje, tworzenie nowej książki adresowej.")
+        print("Plik nie istnieje. Tworzenie nowej książki adresowej.")
         return AddressBook()
     except Exception as e:
-        print(f"Błąd przy ładowaniu książki adresowej: {e}")
+        print(f"Nie udało się wczytać książki adresowej: {e}")
         return AddressBook()
 
 
@@ -548,8 +543,7 @@ def main():
                     if search_term not in found:
                         closest_search_term = suggest_correction_search(
                             search_term, book)
-                        print(f"Czy chodziło Ci o: {
-                              closest_search_term}   - dla frazy wyszukiwania?")
+                        print(f"Czy chodziło Ci o: {closest_search_term} - dla frazy wyszukiwania?")
                 elif contact_action == 'u':
                     book.delete_record_by_id()
                     print("Usunięto kontakt.")
@@ -564,10 +558,7 @@ def main():
                     closest_command = suggest_closest_command(
                         contact_action, available_commands)
                     # closest_search_term = suggest_correction_search(search, book)
-                    print(f"Czy chodziło Ci o wybranie: {
-                          closest_command}   - dla komendy ")
-                    # print("Nieznana akcja, spróbuj ponownie.")
-                    # print("Nieznana akcja, spróbuj ponownie.")
+                    print(f"Czy chodziło Ci o wybranie: {closest_command}   - dla komendy ")
         elif action == 'n':
             while True:
                 note_action = input(
