@@ -3,14 +3,14 @@ import os
 class Notes:
 
     def __init__(self):
-        self.list_notes = 'list_notes.txt'  # Przeniesienie nazwy pliku do atrybutu klasy
+        self.list_notes = 'list_notes.txt'
 
     def create_note(self, file, note):
         file_name = f"{file}.txt"
         with open(file_name, 'w') as fh:
             fh.write(note)
         with open(self.list_notes, 'a') as f:
-            f.write(f"{file}\n")  # Zapis nazwy notatki do listy notatek
+            f.write(f"{file}\n")
 
     def search_notes(self, keyword):
         with open(self.list_notes, 'r') as fh:
@@ -26,7 +26,7 @@ class Notes:
                     content = fh.read()
                     print(content)
                 found = True
-                break  # Przerwanie pętli po znalezieniu notatki
+                break
         if not found:
             print('\nBrak notatki o podanym tytule\n')
 
@@ -44,7 +44,7 @@ class Notes:
                     fh.write(new_notes)
                     print('Notatka została zaktualizowana')
                     found = True
-                    break  # Przerwanie pętli po edycji notatki
+                    break
         if not found:
             print('Notatka o takiej nazwie nie istnieje')
 
@@ -72,7 +72,8 @@ def main():
 
         if action == 'n':
             while True:
-                note_action = input("Wybierz działanie dla notatek: \nDodaj notatkę (d), Wyszukaj notatki (p), Edytuj notatkę (e), Usuń notatkę (u), Wróć (q): ")
+                note_action = input("Wybierz działanie dla notatek: \nDodaj notatkę (d), Wyszukaj notatki (p), "
+                                    "Edytuj notatkę (e), Usuń notatkę (u), Wróć (q): ")
                 if note_action == 'd':
                     file = input('Wprowadź tytuł notatki: ')
                     note = input('Wprowadź notatkę: ')
