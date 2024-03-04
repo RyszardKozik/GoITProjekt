@@ -51,22 +51,49 @@ class Notebook:
         except IndexError:
             print("Podane ID jest poza zakresem listy notatek.")
 
-    def edit_note(self, note_id, title=None, content=None, tags=None):
-        """Edytuje notatkę o podanym ID."""
-        # Konwertuj note_id na int, aby uniknąć błędu porównania typów
-        note_id = int(note_id)
+    def edit_note(self):
+        if not self.notes:
+            print("Brak notatek do wyświetlenia.")
+            return
 
-        if 0 < note_id <= len(self.notes):
-            note = self.notes[note_id - 1]
-            if title is not None:
-                note['title'] = title
-            if content is not None:
-                note['content'] = content
-            if tags is not None:
-                note['tags'] = tags
-            print("Notatka zaktualizowana.")
-        else:
-            print("Nie znaleziono notatki o podanym ID.")
+        self.show_notes()
+        note_id_input = input("Podaj ID notatki do edycji: ")
+
+        try:
+            note_id = int(note_id_input) - 1
+            if note_id < 0 or note_id >= len(self.notes):
+                print("Niepoprawne ID notatki.")
+                return
+        except ValueError:
+            print("Nieprawidłowa wartość ID. Proszę podać liczbę.")
+            return
+
+        note = self.notes[note_id]
+        title = input("Podaj nowy tytuł notatki (naciśnij Enter, aby pominąć): ")
+        content = input("Podaj nową treść notatki (naciśnij Enter, aby pominąć): ")
+        tags_input = input("Podaj nowe tagi oddzielone przecinkami (lub wciśnij Enter, aby pominąć): ")
+        tags = [tag.strip() for tag in tags_input.split(",")] if tags_input else note['tags']
+
+        # Aktualizacja notatki
+        note['title'] = title if title else note['title']
+        note['content'] = content if content else note['content']
+        note['tags'] = tags
+
+        print("Notatka została zaktualizowana.")
+
+    def update_note(self, note_id, title=None, content=None, tags=None):
+        """Aktualizuje notatkę o podanym ID."""
+        note = self.notes[note_id]
+        if title:
+            note['title'] = title
+        if content:
+            note['content'] = content
+        if tags is not None:
+            note['tags'] = tags
+
+        print("Notatka została zaktualizowana.")
+
+        print("Notatka została zaktualizowana.")
 
     def search_notes_by_tag(self, tag):
         # Przekształcanie tagów dla każdej notatki na sety, aby umożliwić efektywne sprawdzanie
