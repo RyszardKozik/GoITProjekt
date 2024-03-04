@@ -555,14 +555,21 @@ def main():
                     notebook.delete_note(int(note_id))
                     print("Usunięto notatkę.")
                 elif note_action == 'e':
-                    notebook.edit_note()  # Zmienione wywołanie metody bez argumentów
+                    notebook.edit_note()
                     print("Zaktualizowano notatkę.")
                 elif note_action == 't':
+                    notebook.show_unique_tags()
                     tag = input("Podaj tag do wyszukiwania: ")
-                    notebook.tag_manager.search_notes_by_tag(tag)
+                    notebook.search_notes_by_tag(tag)
                 elif note_action == 's':
+                    notebook.show_unique_tags()
                     tag = input("Podaj tag po którym chcesz sortować notatki: ")
-                    notebook.tag_manager.sort_notes_by_tags(tag)
+                    if notebook.sort_notes_by_tags(tag):
+                        notebook.show_notes()
+                    else:
+                        print("Sortowanie nie zostało wykonane.")
+                    if notebook.sort_notes_by_tags(tag):
+                        notebook.show_notes()
                 elif note_action == 'q':
                     break
                 else:
