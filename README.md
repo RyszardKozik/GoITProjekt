@@ -6,17 +6,22 @@ Osobisty asystent do zarządzania kontaktami i notatkami.
 
 1. **Klonowanie repozytorium**:
     - Klonowanie repozytorium: Sklonuj repozytorium projektu na swoje lokalne środowisko. Możesz to zrobić za pomocą git, używając poniższego polecenia w terminalu:
-    "git clone https://github.com/PartickPinace/GoITProjekt.git"
-
+    ```
+    git clone https://github.com/PartickPinace/GoITProjekt.git"
+    ```
 2. **Instalacja zalezności**: 
-    - Instalacja zależności: Przejdź do katalogu projektu i zainstaluj wymagane zależności. W projekcie użyto biblioteki python-Levenshtein do obliczania odległości Levenshteina, 
+    - Instalacja zależności: Przejdź do katalogu projektu i zainstaluj wymagane zależności. W projekcie użyto biblioteki `python-Levenshtein` do obliczania odległości Levenshteina, 
     która jest używana do sugestowania poprawek w przypadku błędów wprowadzania danych. Możesz zainstalować tę bibliotekę za pomocą pip:
-    "cd GoITProjekt
-    pip install python-Levenshtein"
+    ```
+    cd GoITProjekt
+    pip install python-Levenshtein
+    ```
 
 3. **Uruchomienie programu**: 
     - Program można uruchomić za pomocą pliku main.py. W terminalu, w katalogu głównym projektu, wpisz: 
-    "python main.py"
+    ```
+    python main.py
+    ```
 
 4. **Uzytkowanie programu**:
 
