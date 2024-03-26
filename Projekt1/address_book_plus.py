@@ -4,6 +4,39 @@ import pickle
 from datetime import datetime, timedelta
 from notes import Notebook
 from Levenshtein import distance as levenshtein_distance
+from abc import ABC, abstractmethod
+
+class UserInterface(ABC):
+    @abstractmethod
+    def display_contacts(self, contacts):
+        pass
+
+    @abstractmethod
+    def display_notes(self, notes):
+        pass
+
+    @abstractmethod
+    def display_commands(self, commands):
+        pass
+
+class ConsoleUI(UserInterface):
+    def display_contacts(self, contacts):
+        print("=== Contacts ===")
+        for contact in contacts:
+            print(f"{contact.name} - (contact.email) - {contact.phone}")
+
+    def display_notes(self, notes):
+        print("=== Notes===")
+        for note in notes:
+            print(note)
+
+    def display_commands(self, commands):
+        print("=== Commands ===")
+        for command in commands:
+            print(command)
+
+    def get_user_input(self):
+        return input("Enter you command: ")
 
 class Field:
     """Base class for entry fields."""
@@ -523,5 +556,34 @@ def main():
     notebook.save_notes()
 
 if __name__ == "__main__":
-    main()
+    notebook = Notebook()
+    notebook.load_notes()
+    book = load_address_book()
+    ui = ConsoleUI()
 
+    available_commands = ['add', 'search', 'delete', 'edit', 'show', 'exit']
+
+    while True:
+        action = input("Choose action: \nManage Contacts (c), Manage Notes (n), or Exit (e): ")
+
+        if action == 'c':
+            while True:
+                contact_action = ui.get_user_input("Choose action: \nAdd contact (a), Find contact (f), "
+                                                  "Delete contact (d), Edit contact (e), Show all (s), Back (b): ")
+                # ... (continue with the logic for managing contacts)
+
+        elif action == 'n':
+            while True:
+                note_action = ui.get_user_input(
+                    "Choose action for notes: \nAdd note (a), Show notes (s), Delete note (d), Back (b): ")
+                # ... (continue with the logic for managing notes)
+
+        elif action == 'e':
+            print("Exiting the program.")
+            break
+
+        else:
+            print("Unknown action, please try again.")
+
+    save_address_book(book)
+    notebook.save_notes()
