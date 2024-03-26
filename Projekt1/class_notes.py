@@ -1,118 +1,93 @@
 import os
 
+class Notes:
 
-class Notes():
+    def __init__(self):
+        self.list_notes = 'list_notes.txt'
 
     def create_note(self, file, note):
-        file_name = str(file + '.txt').strip()
+        file_name = f"{file}.txt"
         with open(file_name, 'w') as fh:
             fh.write(note)
-        name_notes = ''
-        name_notes += (file + '\n')
-        with open(list_notes, 'a') as f:
-            f.write(str(name_notes))
+        with open(self.list_notes, 'a') as f:
+            f.write(f"{file}\n")
 
     def search_notes(self, keyword):
-        result_list = []
-        with open('list_notes.txt', 'r') as fh:
+        with open(self.list_notes, 'r') as fh:
             notes = fh.readlines()
-            found = False
+        found = False
 
-            for note in notes:
-                note = note.replace('\n', '')
-                result_list.append(note)
-
-                if keyword == note:
-                    name_notes = str(keyword + '.txt')
-                    print()
-                    print('Notatka o podanym tytule istnieje, a oto jej zawartość: \n')
-                    with open(name_notes, 'r') as fh:
-                        content = fh.read()
-                        print(content)
-                    found = True
-            if not found:
-                print()
-                print('Brak notatki o podanym tytule')
-
-        print()
+        for note in notes:
+            note = note.strip()
+            if keyword == note:
+                name_notes = f"{keyword}.txt"
+                print('\nNotatka o podanym tytule istnieje, a oto jej zawartość: \n')
+                with open(name_notes, 'r') as fh:
+                    content = fh.read()
+                    print(content)
+                found = True
+                break
+        if not found:
+            print('\nBrak notatki o podanym tytule\n')
 
     def edit_notes(self, keyword):
-        result_list = []
-        with open('list_notes.txt', 'r') as fh:
+        with open(self.list_notes, 'r') as fh:
             notes = fh.readlines()
-            found = False
+        found = False
 
-            for note in notes:
-                note = note.replace('\n', '')
-                result_list.append(note)
-                if keyword == note:
-                    name_notes = str(keyword + '.txt')
-                    new_notes = input('Wprowadź nową notatkę: ')
-                    with open(name_notes, '+w') as fh:
-                        fh.write(new_notes)
-                        print('Notatka została zaktualizowana')
-                        found = True
-            if not found:
-                print('Notatka o takiej nazwie nie istnieje')
+        for note in notes:
+            note = note.strip()
+            if keyword == note:
+                name_notes = f"{keyword}.txt"
+                new_notes = input('Wprowadź nową notatkę: ')
+                with open(name_notes, 'w') as fh:
+                    fh.write(new_notes)
+                    print('Notatka została zaktualizowana')
+                    found = True
+                    break
+        if not found:
+            print('Notatka o takiej nazwie nie istnieje')
 
     def remove_notes(self, keyword):
-        name_note = str(keyword + '.txt')
-        result_list = []
+        name_note = f"{keyword}.txt"
 
         if os.path.exists(name_note):
             os.remove(name_note)
-
-            with open('list_notes.txt', 'r') as fh:
-                notes = fh.readlines()
-                for note in notes:
-                    note = note.replace('\n', '')
-                    result_list.append(note)
-
-                if keyword == note:
-                    note_index = result_list.index(keyword)
-                    if 0 < note_index < len(notes):
-                        remove_note = notes.pop(note_index)
-                        with open('list_notes.txt', 'w') as fh:
-                            fh.writelines(notes)
-                        print(f'Notatka została usunięta: {
-                            remove_note.strip()}')
+            with open(self.list_notes, 'r') as fh:
+                notes = [note.strip() for note in fh.readlines()]
+            if keyword in notes:
+                notes.remove(keyword)
+                with open(self.list_notes, 'w') as fh:
+                    for note in notes:
+                        fh.write(f"{note}\n")
+                print(f'Notatka "{keyword}" została usunięta.')
         else:
             print('Notatka o podanej nazwie nie istnieje')
-
 
 def main():
     notes = Notes()
 
     while True:
-        action = input(
-            "Wybierz akcję: \nZarządzaj Kontaktami (z), Zarządzaj notatkami (n), albo Wyjdź (q): ")
+        action = input("Wybierz akcję: \nZarządzaj notatkami (n), albo Wyjdź (q): ")
 
         if action == 'n':
             while True:
-                note_action = input(
-                    "Wybierz działanie dla notatek: \nDodaj notatkę (d), Wyszukaj notatki (p), Edytuj notatke (e)"
-                    "Usuń notatkę (u), Wróć (q): ")
+                note_action = input("Wybierz działanie dla notatek: \nDodaj notatkę (d), Wyszukaj notatki (p), "
+                                    "Edytuj notatkę (e), Usuń notatkę (u), Wróć (q): ")
                 if note_action == 'd':
-                    file = input('Wprowadź tytul notatki: ')
+                    file = input('Wprowadź tytuł notatki: ')
                     note = input('Wprowadź notatkę: ')
                     notes.create_note(file, note)
                     print('Notatka utworzona pomyślnie')
-
                 elif note_action == 'p':
-                    keyword = (
-                        input('Podaj tytul notatki, którą chcesz otworzyc: '))
+                    keyword = input('Podaj tytuł notatki, którą chcesz otworzyć: ')
                     notes.search_notes(keyword)
-
                 elif note_action == 'e':
-                    keyword = input(
-                        'Podaj nazwę notatki którą chcesz edytować: ')
+                    keyword = input('Podaj nazwę notatki, którą chcesz edytować: ')
                     notes.edit_notes(keyword)
-
                 elif note_action == 'u':
-                    keyword = input(
-                        'Wprowadz nazwe notatki, którą chcesz usunąć: ')
+                    keyword = input('Wprowadź nazwę notatki, którą chcesz usunąć: ')
                     notes.remove_notes(keyword)
-
                 elif note_action == 'q':
                     break
                 else:
@@ -122,9 +97,6 @@ def main():
             break
         else:
             print("Nieznana akcja, spróbuj ponownie.")
-
-
-list_notes = 'list_notes.txt'
 
 if __name__ == "__main__":
     main()

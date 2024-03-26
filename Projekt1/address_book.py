@@ -3,16 +3,19 @@ import re
 import pickle
 from datetime import datetime, timedelta
 from notes import Notebook
+from Levenshtein import distance as levenshtein_distance
 
 
 class Field:
     """Base class for entry fields."""
+
     def __init__(self, value):
         self.value = value
 
 
 class Name(Field):
     pass
+
 
 class Phone(Field):
     def __init__(self, value):
@@ -25,6 +28,7 @@ class Phone(Field):
         pattern = re.compile(r"^\d{9}$")
         return pattern.match(value) is not None
 
+
 class Email(Field):
     def __init__(self, value):
         if not self.validate_email(value):
@@ -33,8 +37,10 @@ class Email(Field):
 
     @staticmethod
     def validate_email(value):
-        pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+        pattern = re.compile(
+            r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
         return pattern.match(value) is not None
+
 
 class Birthday(Field):
     def __init__(self, value):
@@ -50,6 +56,7 @@ class Birthday(Field):
         except ValueError:
             return False
 
+
 class Address(Field):
     def __init__(self, street, city, postal_code, country):
         self.street = street
@@ -57,6 +64,7 @@ class Address(Field):
         self.postal_code = postal_code
         self.country = country
         super().__init__(value=f"{street}, {city}, {postal_code}, {country}")
+
 
 class Record:
     def __init__(self, name: Name, birthday: Birthday = None):
@@ -119,8 +127,9 @@ class Record:
         birthday_str = f", Urodziny: {self.birthday.value}" if self.birthday else ""
         days_to_bday_str = f", Dni do urodzin: {self.days_to_birthday()}" if self.birthday else ""
         address_str = f"\nAdres: {self.address.value}" if self.address else ""
-        return f"ID: {self.id}, Imię i nazwisko: {self.name.value}, " \
-               f"Telefony: {phones}, Email: {emails}{birthday_str}{days_to_bday_str}{address_str}"
+        return (f"ID: {self.id}, Imię i nazwisko: {self.name.value}, "
+                f"Telefony: {phones}, Email: {emails}"
+                f"{birthday_str}{days_to_bday_str}{address_str}")
 
 
 class AddressBook(UserDict):
@@ -130,17 +139,16 @@ class AddressBook(UserDict):
         self.free_ids = set()
 
     def add_record(self, record: Record):
-        """Adds an entry to the address book with ID management."""
-        while self.next_id in self.data or self.next_id in self.free_ids:
-            self.next_id += 1
-        if self.free_ids:
-            record.id = min(self.free_ids)
-            self.free_ids.remove(record.id)
-        else:
-            record.id = self.next_id
-            self.next_id += 1
+        """Dodaje wpis do książki adresowej z zarządzaniem ID."""
+        record.id = self._get_next_record_id()
         self.data[record.id] = record
         print(f"Dodano wpis z ID: {record.id}.")
+
+    def _get_next_record_id(self):
+        """Pomocnicza metoda do uzyskania kolejnego ID."""
+        while self.next_id in self.data or self.next_id in self.free_ids:
+            self.next_id += 1
+        return self.free_ids.pop() if self.free_ids else self.next_id
 
     def delete_record_by_id(self):
         """Deletes a record based on ID."""
@@ -183,10 +191,10 @@ class AddressBook(UserDict):
                 matching_records.append((record_id, record))
         return matching_records
 
-
     def delete_record(self):
         """Deletes the record based on the selected ID after searching by name."""
-        name_to_delete = input("Podaj imię i nazwisko osoby, którą chcesz usunąć: ")
+        name_to_delete = input(
+            "Podaj imię i nazwisko osoby, którą chcesz usunąć: ")
         matching_records = self.find_records_by_name(name_to_delete)
 
         if not matching_records:
@@ -198,16 +206,17 @@ class AddressBook(UserDict):
             print(f"ID: {record_id}, Rekord: {record}")
 
         try:
-            record_id_to_delete = int(input("Podaj ID rekordu, który chcesz usunąć: "))
+            record_id_to_delete = int(
+                input("Podaj ID rekordu, który chcesz usunąć: "))
             if record_id_to_delete in self.data:
                 del self.data[record_id_to_delete]
-                self.free_ids.add(record_id_to_delete)  # Add the ID back to the free ID pool
+                # Add the ID back to the free ID pool
+                self.free_ids.add(record_id_to_delete)
                 print(f"Usunięto rekord o ID: {record_id_to_delete}.")
             else:
                 print("Nie znaleziono rekordu o podanym ID.")
         except ValueError:
             print("Nieprawidłowe ID. Proszę podać liczbę.")
-
 
     def show_all_records(self):
         """Displays all entries in the address book."""
@@ -230,69 +239,87 @@ class AddressBook(UserDict):
         else:
             raise StopIteration
 
+    def edit_record(self):
+        """Edits a record based on the selected name."""
+        name_to_edit = input("Podaj imię i nazwisko osoby, którą chcesz edytować: ")
+        matching_records = self.find_records_by_name(name_to_edit)
 
-def edit_record(book):
-    """Edits an existing record in the address book."""
-    name_to_edit = input("Wprowadź imię i nazwisko które chcesz edytować: ")
-    if name_to_edit in book.data:
-        record = book.data[name_to_edit]
-        print(f"Edytowanie: {name_to_edit}.")
+        if not matching_records:
+            print("Nie znaleziono pasujących rekordów.")
+            return
 
-        # Name and surname edit
-        new_name_input = input("Podaj imię i nazwisko (wciśnij Enter żeby zachować obecne): ")
-        if new_name_input.strip():
-            record.edit_name(Name(new_name_input))
-            print("Zaktualizowano imię i nazwisko.")
+        print("Znaleziono następujące pasujące rekordy:")
+        for record_id, record in matching_records:
+            print(f"ID: {record_id}, Rekord: {record}")
 
-        # Phone number edit
+        record_id_to_edit_input = input("Podaj ID rekordu, który chcesz edytować: ")
+        if record_id_to_edit_input.strip() == '':
+            print("Anulowano edycję rekordu.")
+            return
+
+        try:
+            record_id_to_edit = int(record_id_to_edit_input)
+            if record_id_to_edit not in self.data:
+                print("Nie znaleziono rekordu o podanym ID.")
+                return
+            record = self.data[record_id_to_edit]
+        except ValueError:
+            print("Nieprawidłowa wartość. Proszę podać liczbę.")
+            return
+
+        # Edycja imienia i nazwiska
+        new_name_input = input('Podaj nowe imię i nazwisko (lub wciśnij Enter, aby pominąć): ')
+        if new_name_input:
+            record.name = Name(new_name_input)
+
+        # Edycja numeru telefonu
         if record.phones:
-            print("Obecne numery telefonów: ")
-            for idx, phone in enumerate(record.phones, start=1):
+            print("Obecne numery telefonów:")
+            for idx, phone in enumerate(record.phones, 1):
                 print(f"{idx}. {phone.value}")
-            phone_to_edit = input("Wprowadź indeks numeru telefonu który chcesz edytować "
-                                  "(wciśnij Enter żeby zachować obecny): ")
-            if phone_to_edit.isdigit():
-                idx = int(phone_to_edit) - 1
-                if 0 <= idx < len(record.phones):
-                    new_phone_number = input("Podaj nowy numer telefonu: ")
-                    if new_phone_number.strip():
-                        record.edit_phone(record.phones[idx], Phone(new_phone_number))
-                        print("Numer telefonu zaktualizowany.")
+            phone_choice = input("Wybierz numer do edycji (lub wciśnij Enter, aby pominąć): ")
+            if phone_choice.isdigit():
+                phone_index = int(phone_choice) - 1
+                if 0 <= phone_index < len(record.phones):
+                    new_phone_value = input("Podaj nowy numer telefonu: ")
+                    if Phone.validate_phone(new_phone_value):
+                        record.phones[phone_index] = Phone(new_phone_value)
                     else:
-                        print("Nie dokonano zmian.")
+                        print("Niepoprawny format numeru telefonu.")
                 else:
-                    print("Niepoprawny indeks numeru.")
+                    print("Nieprawidłowy wybór numeru telefonu.")
             else:
-                print("Pomięto edycję numeru.")
-        else:
-            print("Brak numerów telefonu.")
+                print("Pominięto edycję numeru telefonu.")
 
-        # E-mail edit
+        # Edycja adresu email
         if record.emails:
-            print("Obecne adresy e-mail: ")
-            for idx, email in enumerate(record.emails, start=1):
+            # Wyświetlenie obecnych adresów email
+            print("Obecne adresy email:")
+            for idx, email in enumerate(record.emails, 1):
                 print(f"{idx}. {email.value}")
-            email_to_edit = input("Wprowadź indeks adresu e-mail, który chcesz edytować "
-                                  "(wciśnij Enter, aby zachować obecny): ")
-            if email_to_edit.isdigit():
-                idx = int(email_to_edit) - 1
-                if 0 <= idx < len(record.emails):
-                    new_email = input("Podaj nowy adres e-mail: ")
-                    if new_email.strip():
-                        record.edit_email(record.emails[idx], Email(new_email))
-                        print("Adres e-mail zaktualizowany.")
+            email_choice = input("Wybierz adres email do edycji (lub wciśnij Enter, aby pominąć): ")
+            if email_choice.isdigit():
+                email_index = int(email_choice) - 1
+                if 0 <= email_index < len(record.emails):
+                    new_email_value = input("Podaj nowy adres email: ")
+                    if Email.validate_email(new_email_value):
+                        record.emails[email_index] = Email(new_email_value)
                     else:
-                        print("Nie dokonano zmian.")
+                        print("Niepoprawny format adresu email.")
                 else:
-                    print("Niepoprawny indeks adresu e-mail.")
+                    print("Nieprawidłowy wybór adresu email.")
             else:
-                print("Pomięto edycję adresu e-mail.")
-        else:
-            print("Brak adresów e-mail.")
+                print("Pominięto edycję adresu email.")
+
+        new_birthday_input = input("Podaj nową datę urodzenia (YYYY-MM-DD) lub wciśnij Enter, aby pominąć: ")
+        if new_birthday_input:
+            if Birthday.validate_birthday(new_birthday_input):
+                record.birthday = Birthday(new_birthday_input)
+            else:
+                print("Niepoprawny format daty urodzenia.")
 
         print("Wpis zaktualizowany.")
-    else:
-        print("Wpisu nie znaleziono.")
+
 
 def save_address_book(book, filename='address_book.pkl'):
     try:
@@ -302,37 +329,42 @@ def save_address_book(book, filename='address_book.pkl'):
     except Exception as e:
         print(f"Błąd przy zapisie książki adresowej: {e}")
 
+
 def load_address_book(filename='address_book.pkl'):
     try:
         with open(filename, 'rb') as file:
             data = pickle.load(file)
-        book = AddressBook()
-        book.data = data
-        print("Przywrócono książkę adresową.")
-        return book
+            book = AddressBook()
+            book.data = data
+            print("Książka adresowa została wczytana.")
+            return book
     except FileNotFoundError:
-        print("Plik nie istnieje, tworzenie nowej książki adresowej.")
+        print("Plik nie istnieje. Tworzenie nowej książki adresowej.")
         return AddressBook()
     except Exception as e:
-        print(f"Błąd przy ładowaniu książki adresowej: {e}")
+        print(f"Nie udało się wczytać książki adresowej: {e}")
         return AddressBook()
+
 
 def input_phone():
     """Asks the user to enter a phone number."""
     while True:
         try:
-            number = input("Podaj numer telefonu w formacie '123456789' (naciśnij Enter, aby pominąć): ")
+            number = input(
+                "Podaj numer telefonu w formacie '123456789' (naciśnij Enter, aby pominąć): ")
             if not number:
                 return None
             return Phone(number)
         except ValueError as e:
             print(e)
 
+
 def input_email():
     """Asks the user to enter an email address."""
     while True:
         try:
-            address = input("Podaj adres email (naciśnij Enter, aby pominąć): ")
+            address = input(
+                "Podaj adres email (naciśnij Enter, aby pominąć): ")
             if not address:
                 return None
             return Email(address)
@@ -347,7 +379,8 @@ def create_record():
 
     birthday = None
     while True:
-        birthday_input = input("Podaj datę urodzenia (YYYY-MM-DD) lub wciśnij Enter, aby pominąć: ")
+        birthday_input = input(
+            "Podaj datę urodzenia (YYYY-MM-DD) lub wciśnij Enter, aby pominąć: ")
         if not birthday_input:
             break
         try:
@@ -360,7 +393,8 @@ def create_record():
 
     while True:
         try:
-            phone_input = input("Podaj numer telefonu (lub wciśnij Enter, aby zakończyć dodawanie numerów): ")
+            phone_input = input(
+                "Podaj numer telefonu (lub wciśnij Enter, aby zakończyć dodawanie numerów): ")
             if not phone_input:
                 break
             phone = Phone(phone_input)
@@ -370,7 +404,8 @@ def create_record():
 
     while True:
         try:
-            email_input = input("Podaj adres email (lub wciśnij Enter, aby zakończyć dodawanie adresów email): ")
+            email_input = input(
+                "Podaj adres email (lub wciśnij Enter, aby zakończyć dodawanie adresów email): ")
             if not email_input:
                 break
             email = Email(email_input)
@@ -390,13 +425,83 @@ def create_record():
 
     return record
 
+
+def suggest_closest_command(contact_action, available_commands):
+    closest_command = min(available_commands, key=lambda x: abs(
+        ord(x) - ord(contact_action)))
+    return closest_command
+
+
+def suggest_correction_search(search_term, book):
+    # Levenshtein distance dla search_term
+    all_search_terms = [record.name.value for record in book.data.values()] + [phone.value for record in
+                                                                               book.data.values() for phone in
+                                                                               record.phones] + [email.value for record
+                                                                                                 in book.data.values()
+                                                                                                 for email in
+                                                                                                 record.emails]
+
+    closest_search_term = min(
+        all_search_terms, key=lambda x: weighted_levenshtein_distance(search_term, x))
+    return closest_search_term
+
+
+def weighted_levenshtein_distance(s1, s2):
+    len_s1 = len(s1)
+    len_s2 = len(s2)
+
+    if len_s1 == 0:
+        return len_s2
+    if len_s2 == 0:
+        return len_s1
+
+    matrix = [[0] * (len_s2 + 1) for _ in range(len_s1 + 1)]
+
+    for i in range(len_s1 + 1):
+        matrix[i][0] = i
+
+    for j in range(len_s2 + 1):
+        matrix[0][j] = j
+
+    for i in range(1, len_s1 + 1):
+        for j in range(1, len_s2 + 1):
+            cost = 0 if s1[i - 1] == s2[j - 1] else 1
+            matrix[i][j] = min(matrix[i - 1][j] + 1, matrix[i]
+                               [j - 1] + 1, matrix[i - 1][j - 1] + cost)
+
+    # Weighted Levenshtein distance
+    return matrix[len_s1][len_s2] / max(len_s1, len_s2)
+
+
+def levenshtein_distance(s1, s2):
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+
+    if len(s2) == 0:
+        return len(s1)
+
+    previous_row = range(len(s2) + 1)
+
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+
+    return previous_row[-1]
+
+
 def main():
     notebook = Notebook()
     notebook.load_notes()
     book = load_address_book()
-
+    available_commands = ['d', 'z', 'u', 'e', 'p', 'z']
     while True:
-        action = input("Wybierz akcję: \nZarządzaj Kontaktami (z), Zarządzaj notatkami (n), albo Wyjdź (q): ")
+        action = input(
+            "Wybierz akcję: \nZarządzaj Kontaktami (z), Zarządzaj notatkami (n), albo Wyjdź (q): ")
         if action == 'z':
             while True:
                 contact_action = input(
@@ -411,34 +516,60 @@ def main():
                     found = book.find_record(search_term)
                     for record in found:
                         print(record)
+                        continue
+                    if search_term not in found:
+                        closest_search_term = suggest_correction_search(
+                            search_term, book)
+                        print(f"Czy chodziło Ci o: {closest_search_term} - dla frazy wyszukiwania?")
                 elif contact_action == 'u':
                     book.delete_record_by_id()
                     print("Usunięto kontakt.")
                 elif contact_action == 'e':
-                    edit_record(book)
+                    book.edit_record()
                     print("Zaktualizowano kontakt.")
                 elif contact_action == 'p':
                     book.show_all_records()
                 elif contact_action == 'q':
                     break
                 else:
-                    print("Nieznana akcja, spróbuj ponownie.")
+                    closest_command = suggest_closest_command(
+                        contact_action, available_commands)
+                    # closest_search_term = suggest_correction_search(search, book)
+                    print(f"Czy chodziło Ci o wybranie: {closest_command}   - dla komendy ")
         elif action == 'n':
             while True:
-                note_action = input(
-                    "Wybierz działanie dla notatek: \nDodaj notatkę (d), Pokaż notatki (p), "
-                    "Usuń notatkę (u), Wróć (q): ")
+                note_action = input("Wybierz działanie dla notatek: \nDodaj notatkę (d), Pokaż notatki (p), "
+                                    "Usuń notatkę (u), Edytuj notatkę (e), Wyszukaj notatki według tagu (t), "
+                                    "Sortuj notatki według tagów (s), Wróć (q): ")
                 if note_action == 'd':
                     title = input("Podaj tytuł notatki: ")
                     content = input("Podaj treść notatki: ")
-                    notebook.add_note(title, content)
+                    tags = [tag.strip() for tag in input("Podaj tagi oddzielone przecinkami "
+                                                         "(naciśnij Enter, aby pominąć): ").split(',')]
+                    notebook.add_note(title, content, tags)
                     print("Dodano notatkę.")
                 elif note_action == 'p':
                     notebook.show_notes()
                 elif note_action == 'u':
                     note_id = input("Podaj ID notatki do usunięcia: ")
-                    notebook.delete_note(note_id)
+                    notebook.delete_note(int(note_id))
                     print("Usunięto notatkę.")
+                elif note_action == 'e':
+                    notebook.edit_note()
+                    print("Zaktualizowano notatkę.")
+                elif note_action == 't':
+                    notebook.show_unique_tags()
+                    tag = input("Podaj tag do wyszukiwania: ")
+                    notebook.search_notes_by_tag(tag)
+                elif note_action == 's':
+                    notebook.show_unique_tags()
+                    tag = input("Podaj tag po którym chcesz sortować notatki: ")
+                    if notebook.sort_notes_by_tags(tag):
+                        notebook.show_notes()
+                    else:
+                        print("Sortowanie nie zostało wykonane.")
+                    if notebook.sort_notes_by_tags(tag):
+                        notebook.show_notes()
                 elif note_action == 'q':
                     break
                 else:
@@ -454,4 +585,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
